@@ -7,9 +7,10 @@ import { Card, CardHeader, CardContent as CardBody, Input, Button, Label, Form }
 import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
 import Logo from "@/components/Logo";
-const LoginPage = () => {
+export default function LoginPage () {
     return (
-        <Card className="w-full max-w-md border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4">
+       <div>
+         <Card className="w-full max-w-md border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4 my-8 mx-auto">
             <CardHeader className="flex flex-col gap-1 items-center pb-6 text-center">
                 <Logo />
                 <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-pink-500 bg-clip-text text-transparent">
@@ -69,12 +70,13 @@ const LoginPage = () => {
                 </Button>
 
                 <p className="text-center text-sm text-slate-400 mt-6">
-                    Do not have an account?{" "}
+                    New At Ticketo?{" "}
                     <Link href="/register" className="text-pink-500 hover:text-pink-400 font-semibold hover:underline">
                         Sign Up
                     </Link>
                 </p>
             </CardBody>
         </Card>
+       </div>
     )
 }
