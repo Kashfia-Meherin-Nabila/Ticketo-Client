@@ -10,13 +10,6 @@ import {
   Button,
   Label,
   Form,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectIndicator,
-  SelectPopover,
-  ListBox,
-  ListBoxItem,
 } from "@heroui/react";
 import { FaUser, FaEnvelope, FaLock, FaImage, FaGoogle } from "react-icons/fa";
 import Logo from "@/components/Logo";
@@ -32,34 +25,30 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  console.log(errors);
+  
+//   console.log(errors);
 
   const onSubmit = async (data) => {
-
-     // Upload image to imgbb
+    // Upload image to imgbb
     const imageFile = data.image[0];
-        const imageUrl = await uploadImage(imageFile)
+    const imageUrl = await uploadImage(imageFile);
 
     const { data: signUpData, error: signUpError } =
       await authClient.signUp.email({
-         email: data.email,
-            password: data.password,
-            name: data.name,
-            image: imageUrl,
-            role: data.role
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        image: imageUrl,
+        role: data.role,
       });
-     console.log(signUpData, signUpError);
+    //  console.log(signUpData, signUpError);
     if (signUpError) {
-            toast.error("Registration not succeed...")
-        }
-        else {
-            redirect("/")
-        }
-
-
-    };
-    console.log(errors);
-  
+      toast.error("Registration not succeed...");
+    } else {
+      redirect("/");
+    }
+  };
+  console.log(errors);
 
   return (
     <div>
@@ -104,16 +93,16 @@ export default function RegisterPage() {
             <Input
               {...register("image", { required: "Image is Required" })}
               type="file"
-             accept="image/*"
+              accept="image/*"
               id="image"
               placeholder="https://example.com/avatar.jpg"
               labelPlacement="outside"
               startContent={<FaImage className="text-slate-400 text-sm" />}
               className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
             />
-            {
-                            errors.image && <p className="text-red-500">{errors.image.message}</p>
-                        }
+            {errors.image && (
+              <p className="text-red-500">{errors.image.message}</p>
+            )}
 
             <Label htmlFor="password">Password</Label>
             <Input
@@ -129,9 +118,9 @@ export default function RegisterPage() {
               startContent={<FaLock className="text-slate-400 text-sm" />}
               className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
             />
-            {
-                            errors.password && <p className="text-red-500">{errors.password.message}</p>
-                        }
+            {errors.password && (
+              <p className="text-red-500">{errors.password.message}</p>
+            )}
 
             <div className="flex flex-col gap-2 w-full">
               <Label
