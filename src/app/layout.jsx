@@ -1,6 +1,6 @@
-import Navbar from "@/components/Navbar";
+
 import "./globals.css";
-import Footer from "@/components/Footer";
+
 export const metadata = {
   title: "Ticketo | Premium Event Discovery & Ticket Booking Platform",
   description:
@@ -11,9 +11,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full antialiased dark">
       <body className="min-h-full flex flex-col bg-[#080c16] text-[#f3f4f6]">
-        <Navbar />
+        
         <main className="flex-grow flex flex-col">{children}</main>
-        <Footer />
+       
       </body>
     </html>
   );

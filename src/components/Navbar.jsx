@@ -11,11 +11,12 @@ import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { router } = useRouter;
   const { data: session } = useSession();
+  // console.log(session);
 
   useEffect(() => {
     function handleClickOutside(event) {
