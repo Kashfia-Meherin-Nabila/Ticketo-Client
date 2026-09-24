@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 import { uploadImage } from "@/utils/uploadImage";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const {
@@ -25,6 +25,7 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const router = useRouter();
   
 //   console.log(errors);
 
@@ -41,12 +42,13 @@ export default function RegisterPage() {
         image: imageUrl,
         role: data.role,
       });
-    //  console.log(signUpData, signUpError);
+     console.log(signUpData, signUpError);
     if (signUpError) {
-      toast.error("Registration not succeed...");
-    } else {
-      redirect("/");
-    }
+  toast.error(signUpError.message || "Registration failed");
+  return;
+}
+router.push("/");
+router.refresh();
   };
   console.log(errors);
 
@@ -65,59 +67,55 @@ export default function RegisterPage() {
         <CardBody className="gap-4">
           <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
             <Label htmlFor="name">Full Name</Label>
-            <Input
-              {...register("name", { required: "Name is Required" })}
-              id="name"
-              placeholder="John Doe"
-              labelPlacement="outside"
-              startContent={<FaUser className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
-            {errors.name && (
-              <p className="text-red-500">{errors.name.message}</p>
-            )}
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              {...register("email", { required: "Email is Required" })}
-              id="email"
-              placeholder="john@example.com"
-              type="email"
-              labelPlacement="outside"
-              startContent={<FaEnvelope className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
-            {errors.email && (
-              <p className="text-red-500">{errors.email.message}</p>
-            )}
-            <Label htmlFor="image">Profile Image URL</Label>
-            <Input
-              {...register("image", { required: "Image is Required" })}
-              type="file"
-              accept="image/*"
-              id="image"
-              placeholder="https://example.com/avatar.jpg"
-              labelPlacement="outside"
-              startContent={<FaImage className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
-            {errors.image && (
-              <p className="text-red-500">{errors.image.message}</p>
-            )}
+<div className="relative w-full">
+  <FaUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+  <Input
+    {...register("name", { required: "Name is Required" })}
+    id="name"
+    placeholder="John Doe"
+    className="w-full pl-9 bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+  />
+</div>
+{errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-            <Label htmlFor="password">Password</Label>
-            <Input
-              {...register("password", {
-                required: "Password is Required",
-                maxLength: 12,
-                minLength: 6,
-              })}
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              labelPlacement="outside"
-              startContent={<FaLock className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
+<Label htmlFor="email">Email Address</Label>
+<div className="relative w-full">
+  <FaEnvelope className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+  <Input
+    {...register("email", { required: "Email is Required" })}
+    id="email"
+    type="email"
+    placeholder="john@example.com"
+    className="w-full pl-9 bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+  />
+</div>
+{errors.email && <p className="text-red-500">{errors.email.message}</p>}
+
+
+<Label htmlFor="image">Profile Image</Label>
+<Input
+  {...register("image", { required: "Image is Required" })}
+  id="image"
+  type="file"
+  accept="image/*"
+  className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+/>
+{errors.image && <p className="text-red-500">{errors.image.message}</p>}
+<Label htmlFor="password">Password</Label>
+<div className="relative w-full">
+  <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+  <Input
+    {...register("password", {
+      required: "Password is Required",
+      minLength: { value: 6, message: "Min 6 characters" },
+      maxLength: { value: 12, message: "Max 12 characters" },
+    })}
+    id="password"
+    type="password"
+    placeholder="••••••••"
+    className="w-full pl-9 bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+  />
+</div>
             {errors.password && (
               <p className="text-red-500">{errors.password.message}</p>
             )}
@@ -143,12 +141,11 @@ export default function RegisterPage() {
             </div>
 
             <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold h-12 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/20"
-              radius="lg"
-            >
-              Create Account
-            </Button>
+  type="submit"
+  className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold h-12 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/20"
+>
+  Create Account
+</Button>
           </Form>
 
           <div className="flex items-center my-4">
@@ -160,13 +157,12 @@ export default function RegisterPage() {
           </div>
 
           <Button
-            variant="bordered"
-            className="w-full border-white/10 hover:bg-white/5 hover:border-white/20 text-white font-semibold h-11"
-            radius="lg"
-            startContent={<FaGoogle className="text-pink-500" />}
-          >
-            Google OAuth
-          </Button>
+  variant="outline"
+  className="w-full rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20 text-white font-semibold h-11"
+>
+  <FaGoogle className="text-pink-500" />
+  Google OAuth
+</Button>
 
           <p className="text-center text-sm text-slate-400 mt-6">
             Already have an account?{" "}

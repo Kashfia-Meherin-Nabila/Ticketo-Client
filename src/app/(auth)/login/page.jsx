@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   Card,
   CardHeader,
@@ -12,35 +11,33 @@ import {
   Form,
 } from "@heroui/react";
 import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
-
 import Logo from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const router = useRouter();
 
   const onSubmit = async (data) => {
-   
+    const { error } = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
 
-    const { data: signInData, error: signInError } =
-      await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
-      });
-     console.log(signInData, signInError);
-    if (signInError) {
-      toast.error("Registration not succeed...");
-    } else {
-      redirect("/");
+    if (error) {
+      toast.error(error.message || "Login failed");
+      return;
     }
+    router.push("/");
+    router.refresh();
   };
-
 
   return (
     <div>
@@ -57,34 +54,38 @@ export default function LoginPage() {
         <CardBody className="gap-4">
           <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
             <Label htmlFor="email">Email Address</Label>
-            <Input
-            {...register("email", { required: "Email is Required" })}
-              id="email"
-              placeholder="john@example.com"
-              type="email"
-              labelPlacement="outside"
-              startContent={<FaEnvelope className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
+            <div className="relative w-full">
+              <FaEnvelope className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+              <Input
+                {...register("email", { required: "Email is required" })}
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                className="w-full pl-9 bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+              />
+            </div>
+            {errors.email && (
+              <p className="text-red-500">{errors.email.message}</p>
+            )}
+
             <Label htmlFor="password">Password</Label>
-            <Input
-            {...register("password", {
-                required: "Password is Required",
-                maxLength: 12,
-                minLength: 6,
-              })}
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              labelPlacement="outside"
-              startContent={<FaLock className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
+            <div className="relative w-full">
+              <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+              <Input
+                {...register("password", { required: "Password is required" })}
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="w-full pl-9 bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+              />
+            </div>
+            {errors.password && (
+              <p className="text-red-500">{errors.password.message}</p>
+            )}
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold h-12 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/20"
-              radius="lg"
+              className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold h-12 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/20"
             >
               Sign In
             </Button>
@@ -99,11 +100,10 @@ export default function LoginPage() {
           </div>
 
           <Button
-            variant="bordered"
-            className="w-full border-white/10 hover:bg-white/5 hover:border-white/20 text-white font-semibold h-11"
-            radius="lg"
-            startContent={<FaGoogle className="text-pink-500" />}
+            variant="outline"
+            className="w-full rounded-xl border-white/10 hover:bg-white/5 hover:border-white/20 text-white font-semibold h-11"
           >
+            <FaGoogle className="text-pink-500" />
             Google Account
           </Button>
 
