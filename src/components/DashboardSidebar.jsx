@@ -32,25 +32,25 @@ const DashboardSidebar = () => {
       key: "organization",
       label: "Organization",
       icon: FaBuilding,
-      href: "/dashboard/organization",
+      href: "/dashboard/organizer/organization",
     },
     {
       key: "add-event",
       label: "Add Event",
       icon: FaPlus,
-      href: "/dashboard/add-event",
+      href: "/dashboard/organizer/add-event",
     },
     {
       key: "manage-events",
       label: "Manage Events",
       icon: FaCalendarAlt,
-      href: "/dashboard/manage-events",
+      href: "/dashboard/organizer/manage-events",
     },
     {
       key: "attendees",
       label: "Attendees",
       icon: FaUsers,
-      href: "/dashboard/attendees",
+      href: "/dashboard/organizer/attendees",
     },
   ];
 
