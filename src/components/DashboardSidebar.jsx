@@ -53,6 +53,12 @@ const DashboardSidebar = () => {
       href: "/dashboard/organizer/manage-events",
     },
     {
+      key: "pricing",
+      label: "Pricing",
+      icon: FaCalendarAlt,
+      href: "/dashboard/organizer/pricing",
+    },
+    {
       key: "attendees",
       label: "Attendees",
       icon: FaUsers,

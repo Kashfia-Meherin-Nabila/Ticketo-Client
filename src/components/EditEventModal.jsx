@@ -180,7 +180,7 @@ export default function EditEventModal({ event, onClose, onUpdateSuccess }) {
             <button
               type="submit"
               disabled={isUpdating}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-sm font-medium rounded-xl transition shadow-lg shadow-pink-500/20 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-sm font-medium rounded-xl transition shadow-lg shadow-pink-500/20 disabled:opacity-50"
             >
               {isUpdating ? (
                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />

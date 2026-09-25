@@ -33,14 +33,14 @@ export default function RegisterPage() {
     // Upload image to imgbb
     const imageFile = data.image[0];
     const imageUrl = await uploadImage(imageFile);
-
+const plan = data.role === 'organizer' ? 'free':"";
     const { data: signUpData, error: signUpError } =
       await authClient.signUp.email({
         email: data.email,
         password: data.password,
         name: data.name,
         image: imageUrl,
-        role: data.role,
+        role: data.role
       });
      console.log(signUpData, signUpError);
     if (signUpError) {
@@ -51,6 +51,8 @@ router.push("/");
 router.refresh();
   };
   console.log(errors);
+
+  
 
   return (
     <div>

@@ -10,7 +10,7 @@ const DashboardLayout = ({ children }) => {
       <div>
         <DashboardSidebar/>
       </div>
-      <div className="px-6 py-10 max-w-5xl w-full mx-auto">{children}</div>
+      <div className="px-6 py-10 max-w-7xl w-full mx-auto">{children}</div>
     </div>
   );
 };
