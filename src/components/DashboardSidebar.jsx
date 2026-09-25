@@ -19,6 +19,7 @@ import {
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
+import { BiBookAdd, BiUser } from "react-icons/bi";
 
 const DashboardSidebar = () => {
   const { data: session, isPending } = useSession();
@@ -73,10 +74,22 @@ const DashboardSidebar = () => {
       href: "/dashboard/attendee/tickets",
     },
     {
+      key: "manage-bookings",
+      label: "Manage Bookings",
+      icon: BiBookAdd,
+      href: "/dashboard/attendee/manage-bookings",
+    },
+    {
       key: "payments",
       label: "Payments",
       icon: FaHistory,
       href: "/dashboard/attendee/payments",
+    },
+    {
+      key: "profile",
+      label: "Profile",
+      icon: BiUser,
+      href: "/dashboard/attendee/profile",
     },
   ];
 
@@ -182,7 +195,7 @@ const DashboardSidebar = () => {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-grow overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="grow overflow-y-auto px-3 py-4 space-y-1">
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest px-3 pb-2">
             Navigation
           </p>
@@ -206,7 +219,7 @@ const DashboardSidebar = () => {
                   href={href}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? "bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white border border-pink-500/30"
+                      ? "bg-linear-to-r from-pink-500/20 to-purple-500/20 text-white border border-pink-500/30"
                       : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
                 >

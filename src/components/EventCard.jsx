@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Card } from "@heroui/react";
+import Image from "next/image";
 // import { CalendarDays, MapPin, Ticket, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FaMapPin, FaUserSecret } from "react-icons/fa";
@@ -27,11 +28,15 @@ const EventCard = ({ event }) => {
       {/* IMAGE */}
 
       <div className="relative">
-        <img
-          src={event.banner}
-          alt={event.title}
-          className="w-full h-52 object-cover"
-        />
+        <div className="relative w-full h-52">
+          <Image
+            src={event.banner}
+            alt={event.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 400px"
+          />
+        </div>
 
         <div className="absolute top-3 left-3">
           <span className="px-3 py-1 rounded-full bg-indigo-600/90 text-white text-xs font-semibold">
@@ -49,33 +54,23 @@ const EventCard = ({ event }) => {
       {/* CONTENT */}
 
       <div className="p-5">
-
         <h3 className="text-xl font-bold text-white line-clamp-1">
           {event.title}
         </h3>
 
         <div className="mt-4 space-y-3">
-
           {/* DATE */}
 
           <div className="flex items-center gap-3 text-sm">
-            <FaCalendarDays
-              size={17}
-              className="text-indigo-400 shrink-0"
-            />
+            <FaCalendarDays size={17} className="text-indigo-400 shrink-0" />
 
-            <span className="text-slate-300">
-              {event.date}
-            </span>
+            <span className="text-slate-300">{event.date}</span>
           </div>
 
           {/* LOCATION */}
 
           <div className="flex items-center gap-3 text-sm">
-            <FaMapPin
-              size={17}
-              className="text-indigo-400 shrink-0"
-            />
+            <FaMapPin size={17} className="text-indigo-400 shrink-0" />
 
             <span className="text-slate-300 line-clamp-1">
               {event.location}
@@ -85,10 +80,7 @@ const EventCard = ({ event }) => {
           {/* TICKET */}
 
           <div className="flex items-center gap-3 text-sm">
-            <TiTicket
-              size={17}
-              className="text-indigo-400 shrink-0"
-            />
+            <TiTicket size={17} className="text-indigo-400 shrink-0" />
 
             <span className="text-slate-300">
               {Number(event.ticketPrice) === 0
@@ -100,23 +92,16 @@ const EventCard = ({ event }) => {
           {/* SEATS */}
 
           <div className="flex items-center gap-3 text-sm">
-            <FaUserSecret
-              size={17}
-              className="text-indigo-400 shrink-0"
-            />
+            <FaUserSecret size={17} className="text-indigo-400 shrink-0" />
 
-            <span className="text-slate-300">
-              {event.seats} seats
-            </span>
+            <span className="text-slate-300">{event.seats} seats</span>
           </div>
         </div>
 
         {/* BUTTON */}
 
         <Button
-          onPress={() =>
-            router.push(`/events/${event._id}`)
-          }
+          onPress={() => router.push(`/events/${event._id}`)}
           className="
             w-full
             mt-5

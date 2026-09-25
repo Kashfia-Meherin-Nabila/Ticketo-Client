@@ -547,7 +547,7 @@ const EventsPage = () => {
           </div>
 
           <p className="mt-2 text-sm text-slate-500">
-            Discover events you don't want to miss.
+            Discover events you don&apos;t want to miss.
           </p>
 
         </div>
@@ -624,7 +624,7 @@ const EventsPage = () => {
             </h3>
 
             <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-              We couldn't find any events matching your
+              We couldn&apos;t find any events matching your
               current search or filters.
             </p>
 
