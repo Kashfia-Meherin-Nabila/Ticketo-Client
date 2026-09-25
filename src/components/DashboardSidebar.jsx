@@ -19,7 +19,7 @@ import {
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
-import { BiBookAdd, BiUser } from "react-icons/bi";
+import { BiBookAdd, BiChart, BiUser } from "react-icons/bi";
 
 const DashboardSidebar = () => {
   const { data: session, isPending } = useSession();
@@ -95,22 +95,34 @@ const DashboardSidebar = () => {
 
   const adminMenu = [
     {
+      key: "overview",
+      label: "Overview",
+      icon: FaUserCircle,
+      href: "/dashboard/admin",
+    },
+    {
       key: "users",
       label: "Users",
       icon: FaUserShield,
-      href: "/dashboard/users",
+      href: "/dashboard/admin/users",
     },
     {
       key: "events",
       label: "Approve Events",
       icon: FaCalendarAlt,
-      href: "/dashboard/events",
+      href: "/dashboard/admin/events",
     },
     {
       key: "transactions",
       label: "Transaction Logs",
       icon: FaHistory,
-      href: "/dashboard/transactions",
+      href: "/dashboard/admin/transactions",
+    },
+    {
+      key: "analytics",
+      label: "Analytics",
+      icon: BiChart,
+      href: "/dashboard/admin/analytics",
     },
   ];
 
