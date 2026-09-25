@@ -11,6 +11,24 @@ export const myEvents = async (organizationId) => {
   return resData;
 };
 
+// Fetch organization details by user email, then load events
+export const getOrganizerEventsByEmail = async (organizerEmail) => {
+  try {
+    const org = await serverFetch(`/api/organization/${organizerEmail}`);
+
+    if (!org || !org._id) {
+      console.warn("No organization found for email:", organizerEmail);
+      return [];
+    }
+
+    const events = await myEvents(org._id);
+    return Array.isArray(events) ? events : [];
+  } catch (error) {
+    console.error("Failed to fetch organizer events:", error);
+    return [];
+  }
+};
+
 // ==========================================
 // PUBLIC EVENTS
 // ==========================================
@@ -65,6 +83,32 @@ export const getEventById = async (id) => {
 export const eventFilters = async () => {
   return serverFetch("/api/events-filters");
 };
+
+
+// export async function getEventsByOrganizer(organizerEmail) {
+//   try {
+//     const res = await fetch(`${baseURL}/events/organizer/${organizerEmail}`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       credentials: "include", // Ensures HTTP-only cookies/sessions are sent
+//     });
+
+//     if (!res.ok) {
+//       throw new Error("Failed to fetch events");
+//     }
+
+//     return await res.json();
+//   } catch (error) {
+//     console.error("Error fetching organizer events:", error);
+//     return { success: false, data: [] };
+//   }
+// }
+
+
+
+
 
 // // Get single event
 // export const getEvent = async (id) => {
