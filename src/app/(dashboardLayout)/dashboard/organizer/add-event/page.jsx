@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { addEvent, deleteEvent, updateEvent } from "@/lib/api/events/action";
 import { myEvents } from "@/lib/api/events/data";
+import Image from "next/image";
 
 const EventManagement = () => {
   const { data: session } = useSession();
@@ -597,11 +598,15 @@ const EventManagement = () => {
                       Current banner:
                     </p>
 
-                    <img
-                      src={editingEvent.banner}
-                      alt={editingEvent.title}
-                      className="w-full max-w-sm h-40 object-cover rounded-xl border border-white/10"
-                    />
+                    <div className="relative w-full h-48 overflow-hidden rounded-t-2xl">
+                      <Image
+                        src={editingEvent.banner}
+                        alt={editingEvent.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover"
+                      />
+                    </div>
 
                     <p className="text-xs text-slate-500 mt-2">
                       Select a new image only if you want to replace the current
@@ -693,11 +698,15 @@ const EventManagement = () => {
               >
                 {/* BANNER */}
 
-                <img
-                  src={event.banner}
-                  alt={event.title}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="relative w-full h-48 overflow-hidden rounded-t-2xl">
+                  <Image
+                    src={event.banner}
+                    alt={event.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
 
                 <div className="p-5">
                   {/* TITLE + STATUS */}

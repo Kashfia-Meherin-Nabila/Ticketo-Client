@@ -11,8 +11,46 @@ export const myEvents = async (organizationId) => {
   return resData;
 };
 
-// Get single event
-export const getEvent = async (id) => {
+// ==========================================
+// PUBLIC EVENTS
+// ==========================================
+
+export const publicEvents = async ({
+  page = 1,
+  limit = 8,
+  search = "",
+  category = "",
+  location = "",
+} = {}) => {
+  const params = new URLSearchParams();
+
+  params.set("page", page);
+  params.set("limit", limit);
+
+  if (search) {
+    params.set("search", search);
+  }
+
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (location) {
+    params.set("location", location);
+  }
+
+  const resData = await serverFetch(
+    `/api/events?${params.toString()}`
+  );
+
+  return resData;
+};
+
+// ==========================================
+// SINGLE EVENT
+// ==========================================
+
+export const getEventById = async (id) => {
   const resData = await serverFetch(
     `/api/events/${id}`
   );
@@ -20,12 +58,29 @@ export const getEvent = async (id) => {
   return resData;
 };
 
-export const getEvents =async (params) => {
-  const qs = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== "" && v != null) qs.set(k, v);
-  });
-  return serverFetch(`/api/events?${qs.toString()}`);
+// ==========================================
+// FILTER OPTIONS
+// ==========================================
+
+export const eventFilters = async () => {
+  return serverFetch("/api/events-filters");
 };
 
-export const getEventFilters = async() => serverFetch("/api/events-filters");
+// // Get single event
+// export const getEvent = async (id) => {
+//   const resData = await serverFetch(
+//     `/api/events/${id}`
+//   );
+
+//   return resData;
+// };
+
+// export const getEvents =async (params) => {
+//   const qs = new URLSearchParams();
+//   Object.entries(params).forEach(([k, v]) => {
+//     if (v !== "" && v != null) qs.set(k, v);
+//   });
+//   return serverFetch(`/api/events?${qs.toString()}`);
+// };
+
+// export const getEventFilters = async() => serverFetch("/api/events-filters");

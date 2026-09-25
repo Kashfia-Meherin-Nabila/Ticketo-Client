@@ -58,6 +58,7 @@ export const serverMutation = async (path, method, data) => {
   return result;
 };
 
+
 export const serverFetch = async (path) => {
   const res = await fetch(`${baseURL}${path}`, {
     cache: "no-store",
@@ -65,18 +66,12 @@ export const serverFetch = async (path) => {
 
   const text = await res.text();
 
-  // Empty response
-  if (!text) {
-    return null;
-  }
-
-  let result;
+  let result = {};
 
   try {
-    result = JSON.parse(text);
-  } catch (error) {
-    console.error("Invalid JSON response:", text);
-    throw new Error("Server returned an invalid response");
+    result = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Invalid JSON response from ${path}`);
   }
 
   if (!res.ok) {
