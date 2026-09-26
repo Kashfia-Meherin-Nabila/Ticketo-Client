@@ -12,12 +12,7 @@ import Swal from "sweetalert2";
 import { BiMapPin, BiArrowBack } from "react-icons/bi";
 import { BsPeople } from "react-icons/bs";
 import { FaCalendarDays } from "react-icons/fa6";
-import {
-  LuBuilding2,
-  LuTicket,
-  LuClock3,
-  LuShieldCheck,
-} from "react-icons/lu";
+import { LuBuilding2, LuTicket, LuClock3, LuShieldCheck } from "react-icons/lu";
 
 const EventDetailsPage = () => {
   const params = useParams();
@@ -66,51 +61,81 @@ const EventDetailsPage = () => {
     loadEvent();
   }, [params.id, session, isPending]);
 
-  // ==========================================
-  // HANDLE BOOKING
-  // ==========================================
-
+ 
   const handleBookEvent = async () => {
     // 1. Verify User Authentication
     if (!session?.user) {
       toast.error("Please sign in to book events.");
+
       return router.push(`/login?callbackUrl=/events/${params.id}`);
     }
 
-    // 2. Strict Role Check: Only 'attendee' role can book
+    // 2. Strict Role Check: Only attendee can book
     if (session.user.role !== "attendee") {
       Swal.fire({
         title: "Access Restricted",
-        text: `Only attendees can book events. You are currently signed in as an ${session.user.role || "user"}.`,
+        text: `Only attendees can book events. You are currently signed in as an ${
+          session.user.role || "user"
+        }.`,
         icon: "warning",
         background: "#090d16",
         color: "#f8fafc",
         confirmButtonColor: "#4f46e5",
       });
+
       return;
     }
 
+    // 3. Event information
     const quantity = 1;
+
     const numericPrice = Number(event?.ticketPrice) || 0;
+
     const totalAmount = numericPrice * quantity;
 
-    // 3. SweetAlert Confirmation Modal
+    const availableSeats = Number(event?.seats) || 0;
+
+    if (availableSeats <= 0) {
+      toast.error("Sorry, this event is sold out.");
+      return;
+    }
+
+    // 4. Confirmation Modal
     const confirm = await Swal.fire({
       title: "Confirm Your Booking",
+
       html: `
-        <div class="text-left text-sm text-slate-300 space-y-2 mt-2">
-          <p><strong>Event:</strong> ${event.title}</p>
-          <p><strong>Quantity:</strong> ${quantity} ticket</p>
-          <p><strong>Total Price:</strong> ${numericPrice === 0 ? "Free" : `৳${totalAmount}`}</p>
-        </div>
-      `,
+      <div class="text-left text-sm text-slate-300 space-y-2 mt-2">
+        <p>
+          <strong>Event:</strong> ${event.title}
+        </p>
+
+        <p>
+          <strong>Quantity:</strong> ${quantity} ticket
+        </p>
+
+        <p>
+          <strong>Total Price:</strong>
+          ${numericPrice === 0 ? "Free" : `৳${totalAmount}`}
+        </p>
+      </div>
+    `,
+
       icon: "info",
+
       showCancelButton: true,
-      confirmButtonText: "Confirm & Book",
+
+      confirmButtonText:
+        numericPrice === 0 ? "Confirm & Book" : "Continue to Payment",
+
       cancelButtonText: "Cancel",
+
       confirmButtonColor: "#4f46e5",
+
       cancelButtonColor: "#1e293b",
+
       background: "#090d16",
+
       color: "#f8fafc",
     });
 
@@ -119,34 +144,80 @@ const EventDetailsPage = () => {
     try {
       setIsBookingLoading(true);
 
-      const bookingPayload = {
-        eventId: event._id || params.id,
-        eventTitle: event.title,
-        attendeeEmail: session.user.email,
-        quantity,
-        amount: totalAmount,
-        paymentStatus: numericPrice === 0 ? "confirmed" : "paid",
-        transactionId: `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        bookingDate: new Date().toISOString(),
-      };
+      // ==========================================
+      // FREE EVENT
+      // ==========================================
 
-      const result = await createBooking(bookingPayload);
+      if (numericPrice === 0) {
+  const bookingPayload = {
+    eventId: event._id || params.id,
+    eventTitle: event.title,
+    attendeeEmail: session.user.email,
+    quantity,
+    amount: 0,
+    paymentStatus: "paid",
+    transactionId: `TXN-${Date.now()}-${Math.floor(
+      1000 + Math.random() * 9000,
+    )}`,
+    bookingDate: new Date().toISOString(),
+  };
 
-      if (result) {
-        Swal.fire({
-          title: "Booking Confirmed!",
-          text: "Your ticket has been booked successfully.",
-          icon: "success",
-          background: "#090d16",
-          color: "#f8fafc",
-          confirmButtonColor: "#4f46e5",
-        }).then(() => {
-          router.push("/dashboard/attendee/tickets");
-        });
+  const result = await createBooking(bookingPayload);
+
+  if (!result?.success) {
+    throw new Error(
+      result?.message || "Failed to create booking.",
+    );
+  }
+
+  await Swal.fire({
+    title: "Booking Confirmed!",
+    text: "Your ticket has been booked successfully.",
+    icon: "success",
+    background: "#090d16",
+    color: "#f8fafc",
+    confirmButtonColor: "#4f46e5",
+  });
+
+  router.push("/dashboard/attendee/my-bookings");
+  return;
+}
+
+      // ==========================================
+      // PAID EVENT → STRIPE CHECKOUT
+      // ==========================================
+      const eventId = event._id || params.id;
+      const response = await fetch("/api/checkout_sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "booking",
+          eventId,
+          eventTitle: event.title,
+          ticketPrice: numericPrice,
+          quantity,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Failed to initialize payment.");
       }
+
+      if (!result?.url) {
+        throw new Error("Stripe checkout URL was not returned.");
+      }
+
+      window.location.href = result.url;
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to process booking. Please try again.");
+      console.error("Booking/payment error:", error);
+
+      toast.error(
+        error?.message || "Failed to process booking. Please try again.",
+      );
     } finally {
       setIsBookingLoading(false);
     }
@@ -162,9 +233,7 @@ const EventDetailsPage = () => {
         <Card className="rounded-2xl border border-white/10 bg-slate-950/80 px-8 py-7">
           <div className="flex items-center gap-3">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-            <p className="text-sm text-slate-400">
-              Checking authentication...
-            </p>
+            <p className="text-sm text-slate-400">Checking authentication...</p>
           </div>
         </Card>
       </div>
@@ -178,17 +247,17 @@ const EventDetailsPage = () => {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl pb-16">
-        <div className="mb-6 h-10 w-36 animate-pulse rounded-xl bg-white/[0.05]" />
+        <div className="mb-6 h-10 w-36 animate-pulse rounded-xl bg-white/5" />
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/70">
-          <div className="h-[300px] animate-pulse bg-white/[0.04] md:h-[500px]" />
+          <div className="h-75 animate-pulse bg-white/4 md:h-125" />
           <div className="space-y-6 p-6 md:p-10">
-            <div className="h-5 w-24 animate-pulse rounded-full bg-white/[0.06]" />
-            <div className="h-10 w-2/3 animate-pulse rounded bg-white/[0.06]" />
+            <div className="h-5 w-24 animate-pulse rounded-full bg-white/6" />
+            <div className="h-10 w-2/3 animate-pulse rounded bg-white/6" />
             <div className="grid gap-4 md:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-20 animate-pulse rounded-2xl bg-white/[0.04]"
+                  className="h-20 animate-pulse rounded-2xl bg-white/4"
                 />
               ))}
             </div>
@@ -209,9 +278,7 @@ const EventDetailsPage = () => {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-400">
             <LuTicket size={28} />
           </div>
-          <h2 className="text-2xl font-bold text-white">
-            Event Not Found
-          </h2>
+          <h2 className="text-2xl font-bold text-white">Event Not Found</h2>
           <p className="mt-3 text-sm leading-6 text-slate-500">
             This event may have been removed or is not approved yet.
           </p>
@@ -234,7 +301,7 @@ const EventDetailsPage = () => {
       <Button
         onPress={() => router.push("/events")}
         radius="lg"
-        className="mb-6 border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]"
+        className="mb-6 border border-white/10 bg-white/4 text-slate-300 hover:bg-white/8"
       >
         <BiArrowBack size={18} />
         Back to Events
@@ -243,7 +310,7 @@ const EventDetailsPage = () => {
       {/* MAIN EVENT CARD */}
       <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/80 shadow-2xl shadow-black/30">
         {/* IMAGE */}
-        <div className="group relative h-[320px] overflow-hidden md:h-[500px]">
+        <div className="group relative h-80 overflow-hidden md:h-125">
           <Image
             src={event.banner}
             alt={event.title}
@@ -286,7 +353,7 @@ const EventDetailsPage = () => {
         <div className="p-6 md:p-10">
           {/* INFO GRID */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-indigo-500/30 hover:bg-indigo-500/[0.04]">
+            <div className="group rounded-2xl border border-white/10 bg-white/3 p-5 transition hover:border-indigo-500/30 hover:bg-indigo-500/4">
               <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
                 <FaCalendarDays size={19} />
               </div>
@@ -314,7 +381,9 @@ const EventDetailsPage = () => {
                 Ticket Price
               </p>
               <p className="mt-2 text-xl font-bold text-white">
-                {Number(event.ticketPrice) === 0 ? "Free" : `৳${event.ticketPrice}`}
+                {Number(event.ticketPrice) === 0
+                  ? "Free"
+                  : `$${event.ticketPrice}`}
               </p>
             </div>
 
@@ -352,7 +421,8 @@ const EventDetailsPage = () => {
                       Event Information
                     </h3>
                     <p className="mt-2 text-sm leading-7 text-slate-500">
-                      Join us for this exciting {event.category?.toLowerCase()} event and enjoy an unforgettable experience.
+                      Join us for this exciting {event.category?.toLowerCase()}{" "}
+                      event and enjoy an unforgettable experience.
                     </p>
                   </div>
                 </div>
@@ -387,7 +457,9 @@ const EventDetailsPage = () => {
                   <div className="mt-2 flex items-end justify-between gap-4">
                     <div>
                       <p className="text-3xl font-black text-white">
-                        {Number(event.ticketPrice) === 0 ? "Free" : `৳${event.ticketPrice}`}
+                        {Number(event.ticketPrice) === 0
+                          ? "Free"
+                          : `$${event.ticketPrice}`}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">per person</p>
                     </div>

@@ -6,15 +6,28 @@ import { uploadImage } from "@/utils/uploadImage";
 
 import { myOrganization } from "@/lib/api/organization/data";
 
-import { Button, Card, CardHeader, Form, Input } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Form,
+  Input,
+  ListBox,
+  Select,
+} from "@heroui/react";
 
 import React, { useEffect, useState } from "react";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { addEvent, deleteEvent, updateEvent } from "@/lib/api/events/action";
+import {
+  addEvent,
+  deleteEvent,
+  updateEvent,
+} from "@/lib/api/events/action";
 import { myEvents } from "@/lib/api/events/data";
 import Image from "next/image";
+import { Label } from "@heroui/react";
 
 const EventManagement = () => {
   const { data: session } = useSession();
@@ -28,21 +41,38 @@ const EventManagement = () => {
 
   const [editingEvent, setEditingEvent] = useState(null);
 
+  const categories = [
+    "Technology",
+    "Music",
+    "Business",
+    "Education",
+    "Sports",
+    "Health",
+    "Art & Culture",
+    "Workshop",
+    "Conference",
+    "Entertainment",
+    "Other",
+  ];
+
   const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      title: "",
-      category: "",
-      location: "",
-      date: "",
-      ticketPrice: "",
-      seats: "",
-    },
-  });
+  register,
+  handleSubmit,
+  reset,
+  control,
+  formState: { errors },
+} = useForm({
+  defaultValues: {
+    title: "",
+    category: "",
+    location: "",
+    date: "",
+    ticketPrice: "",
+    seats: "",
+  },
+});
+
+  
 
   // ==========================================
   // GET ORGANIZATION
@@ -123,12 +153,10 @@ const EventManagement = () => {
 
       let banner = editingEvent?.banner || "";
 
-      // Upload only if user selected a new image
       if (data.banner?.length > 0) {
         banner = await uploadImage(data.banner[0]);
       }
 
-      // New event requires banner
       if (!banner) {
         toast.error("Please upload a banner image");
         return;
@@ -151,9 +179,6 @@ const EventManagement = () => {
 
         organizationId: myOrg._id,
 
-        // Important:
-        // Create = pending
-        // Update = pending
         status: "pending",
       };
 
@@ -162,7 +187,10 @@ const EventManagement = () => {
       // ======================================
 
       if (editingEvent?._id) {
-        const result = await updateEvent(eventData, editingEvent._id);
+        const result = await updateEvent(
+          eventData,
+          editingEvent._id
+        );
 
         if (result?.matchedCount > 0) {
           setEvents((previousEvents) =>
@@ -172,11 +200,13 @@ const EventManagement = () => {
                     ...event,
                     ...eventData,
                   }
-                : event,
-            ),
+                : event
+            )
           );
 
-          toast.success("Event updated and sent for approval");
+          toast.success(
+            "Event updated and sent for approval"
+          );
 
           setEditingEvent(null);
 
@@ -205,9 +235,14 @@ const EventManagement = () => {
           _id: result.insertedId,
         };
 
-        setEvents((previousEvents) => [newEvent, ...previousEvents]);
+        setEvents((previousEvents) => [
+          newEvent,
+          ...previousEvents,
+        ]);
 
-        toast.success("Event created and sent for approval");
+        toast.success(
+          "Event created and sent for approval"
+        );
 
         reset({
           title: "",
@@ -221,7 +256,9 @@ const EventManagement = () => {
     } catch (error) {
       console.error(error);
 
-      toast.error(error?.message || "Something went wrong");
+      toast.error(
+        error?.message || "Something went wrong"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -272,7 +309,7 @@ const EventManagement = () => {
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this event?",
+      "Are you sure you want to delete this event?"
     );
 
     if (!confirmed) return;
@@ -282,12 +319,15 @@ const EventManagement = () => {
 
       if (result?.deletedCount > 0) {
         setEvents((previousEvents) =>
-          previousEvents.filter((event) => event._id !== id),
+          previousEvents.filter(
+            (event) => event._id !== id
+          )
         );
 
-        toast.success("Event deleted successfully");
+        toast.success(
+          "Event deleted successfully"
+        );
 
-        // If deleting currently edited event
         if (editingEvent?._id === id) {
           handleCancelEdit();
         }
@@ -297,7 +337,10 @@ const EventManagement = () => {
     } catch (error) {
       console.error(error);
 
-      toast.error(error?.message || "Failed to delete event");
+      toast.error(
+        error?.message ||
+          "Failed to delete event"
+      );
     }
   };
 
@@ -330,8 +373,10 @@ const EventManagement = () => {
         />
 
         <div className="mt-6">
-          <Card className="bg-slate-900/40 border border-white/5">
-            <div className="p-6 text-slate-400">Loading organization...</div>
+          <Card className="border border-white/5 bg-slate-900/40">
+            <div className="p-6 text-slate-400">
+              Loading organization...
+            </div>
           </Card>
         </div>
       </div>
@@ -350,14 +395,15 @@ const EventManagement = () => {
           description="Create, update and manage your events"
         />
 
-        <Card className="mt-6 bg-slate-900/40 border border-white/5">
+        <Card className="mt-6 border border-white/5 bg-slate-900/40">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white">
               Organization Required
             </h3>
 
-            <p className="text-slate-400 mt-2">
-              Please create your organization profile before creating an event.
+            <p className="mt-2 text-slate-400">
+              Please create your organization profile
+              before creating an event.
             </p>
           </div>
         </Card>
@@ -382,15 +428,17 @@ const EventManagement = () => {
 
       <div className="mt-6 max-w-3xl">
         <Card
-          className="border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl rounded-2xl"
+          className="rounded-2xl border border-white/5 bg-slate-900/40 shadow-2xl backdrop-blur-xl"
           radius="lg"
         >
-          <CardHeader className="flex flex-col items-start gap-1 pb-4 border-b border-white/5 p-6">
+          <CardHeader className="flex flex-col items-start gap-1 border-b border-white/5 p-6 pb-4">
             <h3 className="text-xl font-bold text-white">
-              {editingEvent ? "Update Event" : "Create Event"}
+              {editingEvent
+                ? "Update Event"
+                : "Create Event"}
             </h3>
 
-            <p className="text-slate-400 text-xs">
+            <p className="text-xs text-slate-400">
               {editingEvent
                 ? "Updating an event will send it back for approval."
                 : "Create a new event and submit it for approval."}
@@ -400,81 +448,118 @@ const EventManagement = () => {
           <div className="p-6">
             <Form
               onSubmit={handleSubmit(onSubmit)}
-              className="space-y-5 w-full"
+              className="w-full space-y-5"
             >
+
               {/* TITLE */}
 
               <div className="w-full">
                 <label
                   htmlFor="title"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Event Title
                 </label>
 
                 <Input
                   {...register("title", {
-                    required: "Event title is required",
+                    required:
+                      "Event title is required",
                   })}
                   id="title"
                   placeholder="Tech Conference 2026"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {errors.title && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.title.message}
                   </p>
                 )}
               </div>
 
-              {/* CATEGORY */}
+              
+{/* CATEGORY */}
 
-              <div className="w-full">
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-white mb-2"
-                >
-                  Category
-                </label>
+<div className="w-full">
+  <Controller
+    name="category"
+    control={control}
+    rules={{
+      required: "Category is required",
+    }}
+    render={({ field }) => (
+      <Select
+        className="w-full"
+        placeholder="Select category"
+        selectedKeys={
+          field.value
+            ? new Set([field.value])
+            : new Set()
+        }
+        onSelectionChange={(keys) => {
+          const selectedKey = Array.from(keys)[0];
 
-                <Input
-                  {...register("category", {
-                    required: "Category is required",
-                  })}
-                  id="category"
-                  placeholder="Technology"
-                  className="w-full bg-slate-900/50 border-white/10"
-                />
+          field.onChange(
+            selectedKey
+              ? String(selectedKey)
+              : ""
+          );
+        }}
+      >
+        <Label>Category</Label>
 
-                {errors.category && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.category.message}
-                  </p>
-                )}
-              </div>
+        <Select.Trigger>
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
 
+        <Select.Popover>
+          <ListBox>
+            {categories.map((category) => (
+              <ListBox.Item
+                key={category}
+                id={category}
+                textValue={category}
+              >
+                {category}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </ListBox>
+        </Select.Popover>
+      </Select>
+    )}
+  />
+
+  {errors.category && (
+    <p className="mt-1 text-sm text-red-500">
+      {errors.category.message}
+    </p>
+  )}
+</div>
               {/* LOCATION */}
 
               <div className="w-full">
                 <label
                   htmlFor="location"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Location
                 </label>
 
                 <Input
                   {...register("location", {
-                    required: "Location is required",
+                    required:
+                      "Location is required",
                   })}
                   id="location"
                   placeholder="Dhaka, Bangladesh"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {errors.location && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.location.message}
                   </p>
                 )}
@@ -485,22 +570,23 @@ const EventManagement = () => {
               <div className="w-full">
                 <label
                   htmlFor="date"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Event Date
                 </label>
 
                 <Input
                   {...register("date", {
-                    required: "Event date is required",
+                    required:
+                      "Event date is required",
                   })}
                   id="date"
                   type="date"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {errors.date && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.date.message}
                   </p>
                 )}
@@ -511,28 +597,31 @@ const EventManagement = () => {
               <div className="w-full">
                 <label
                   htmlFor="ticketPrice"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
-                  Ticket Price(USD)
+                  Ticket Price (USD)
                 </label>
 
                 <Input
                   {...register("ticketPrice", {
-                    required: "Ticket price is required",
+                    required:
+                      "Ticket price is required",
                     min: {
                       value: 0,
-                      message: "Ticket price cannot be negative",
+                      message:
+                        "Ticket price cannot be negative",
                     },
                   })}
                   id="ticketPrice"
                   type="number"
                   min="0"
-                  placeholder="$"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  step="0.01"
+                  placeholder="5.00"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {errors.ticketPrice && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.ticketPrice.message}
                   </p>
                 )}
@@ -543,28 +632,30 @@ const EventManagement = () => {
               <div className="w-full">
                 <label
                   htmlFor="seats"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Number of Seats
                 </label>
 
                 <Input
                   {...register("seats", {
-                    required: "Number of seats is required",
+                    required:
+                      "Number of seats is required",
                     min: {
                       value: 1,
-                      message: "Seats must be at least 1",
+                      message:
+                        "Seats must be at least 1",
                     },
                   })}
                   id="seats"
                   type="number"
                   min="1"
                   placeholder="100"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {errors.seats && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.seats.message}
                   </p>
                 )}
@@ -575,7 +666,7 @@ const EventManagement = () => {
               <div className="w-full">
                 <label
                   htmlFor="banner"
-                  className="block text-sm font-medium text-white mb-2"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Banner Image
                 </label>
@@ -589,34 +680,37 @@ const EventManagement = () => {
                   id="banner"
                   type="file"
                   accept="image/*"
-                  className="w-full bg-slate-900/50 border-white/10"
+                  className="w-full bg-slate-900/50"
                 />
 
                 {editingEvent?.banner && (
                   <div className="mt-3">
-                    <p className="text-xs text-slate-400 mb-2">
+                    <p className="mb-2 text-xs text-slate-400">
                       Current banner:
                     </p>
 
-                    <div className="relative w-full h-48 overflow-hidden rounded-t-2xl">
+                    <div className="relative h-48 w-full overflow-hidden rounded-2xl">
                       <Image
                         src={editingEvent.banner}
-                        alt={editingEvent.title}
+                        alt={
+                          editingEvent.title
+                        }
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover"
                       />
                     </div>
 
-                    <p className="text-xs text-slate-500 mt-2">
-                      Select a new image only if you want to replace the current
-                      banner.
+                    <p className="mt-2 text-xs text-slate-500">
+                      Select a new image only if
+                      you want to replace the
+                      current banner.
                     </p>
                   </div>
                 )}
 
                 {errors.banner && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-500">
                     {errors.banner.message}
                   </p>
                 )}
@@ -628,7 +722,7 @@ const EventManagement = () => {
                 <Button
                   type="submit"
                   isDisabled={submitting}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 px-6"
+                  className="h-11 bg-indigo-600 px-6 font-bold text-white hover:bg-indigo-500"
                   radius="lg"
                 >
                   {submitting
@@ -642,13 +736,14 @@ const EventManagement = () => {
                   <Button
                     type="button"
                     onPress={handleCancelEdit}
-                    className="bg-slate-700 hover:bg-slate-600 text-white font-semibold h-11 px-6"
+                    className="h-11 bg-slate-700 px-6 font-semibold text-white hover:bg-slate-600"
                     radius="lg"
                   >
                     Cancel
                   </Button>
                 )}
               </div>
+
             </Form>
           </div>
         </Card>
@@ -659,46 +754,70 @@ const EventManagement = () => {
       ====================================== */}
 
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-white">My Events</h3>
 
-            <p className="text-sm text-slate-400 mt-1">
+        <div className="mb-4 flex items-center justify-between">
+
+          <div>
+            <h3 className="text-xl font-bold text-white">
+              My Events
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-400">
               Manage your events and approval status.
             </p>
           </div>
 
           <span className="text-sm text-slate-400">
-            {events.length} {events.length === 1 ? "Event" : "Events"}
+            {events.length}{" "}
+            {events.length === 1
+              ? "Event"
+              : "Events"}
           </span>
+
         </div>
 
         {eventLoading ? (
-          <Card className="bg-slate-900/40 border border-white/5">
-            <div className="p-6 text-slate-400">Loading events...</div>
+
+          <Card className="border border-white/5 bg-slate-900/40">
+            <div className="p-6 text-slate-400">
+              Loading events...
+            </div>
           </Card>
+
         ) : events.length === 0 ? (
-          <Card className="bg-slate-900/40 border border-white/5">
+
+          <Card className="border border-white/5 bg-slate-900/40">
+
             <div className="p-10 text-center">
+
               <h4 className="text-lg font-semibold text-white">
                 No events yet
               </h4>
 
-              <p className="text-slate-400 text-sm mt-2">
-                Create your first event using the form above.
+              <p className="mt-2 text-sm text-slate-400">
+                Create your first event using the
+                form above.
               </p>
+
             </div>
+
           </Card>
+
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+
             {events.map((event) => (
+
               <Card
                 key={event._id}
                 className="overflow-hidden border border-white/5 bg-slate-900/40 backdrop-blur-xl"
               >
+
                 {/* BANNER */}
 
-                <div className="relative w-full h-48 overflow-hidden rounded-t-2xl">
+                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
+
                   <Image
                     src={event.banner}
                     alt={event.title}
@@ -706,87 +825,128 @@ const EventManagement = () => {
                     sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover"
                   />
+
                 </div>
 
                 <div className="p-5">
+
                   {/* TITLE + STATUS */}
 
                   <div className="flex items-start justify-between gap-3">
+
                     <div>
+
                       <h4 className="text-lg font-bold text-white">
                         {event.title}
                       </h4>
 
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="mt-1 text-sm text-slate-400">
                         {event.category}
                       </p>
+
                     </div>
 
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusClass(
-                        event.status,
+                      className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${getStatusClass(
+                        event.status
                       )}`}
                     >
-                      {event.status || "pending"}
+                      {event.status ||
+                        "pending"}
                     </span>
+
                   </div>
 
                   {/* DETAILS */}
 
                   <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between gap-4">
-                      <span className="text-slate-500">Location</span>
 
-                      <span className="text-slate-300 text-right">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-slate-500">
+                        Location
+                      </span>
+
+                      <span className="text-right text-slate-300">
                         {event.location}
                       </span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Date</span>
-
-                      <span className="text-slate-300">{event.date}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Ticket</span>
+                      <span className="text-slate-500">
+                        Date
+                      </span>
 
                       <span className="text-slate-300">
-                        ৳{event.ticketPrice}
+                        {event.date}
                       </span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Seats</span>
+                      <span className="text-slate-500">
+                        Ticket
+                      </span>
 
-                      <span className="text-slate-300">{event.seats}</span>
+                      <span className="text-slate-300">
+                        {Number(
+                          event.ticketPrice
+                        ) === 0
+                          ? "Free"
+                          : `$${Number(
+                              event.ticketPrice
+                            ).toFixed(2)}`}
+                      </span>
                     </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">
+                        Seats
+                      </span>
+
+                      <span className="text-slate-300">
+                        {event.seats}
+                      </span>
+                    </div>
+
                   </div>
 
                   {/* ACTIONS */}
 
-                  <div className="flex gap-3 mt-5 pt-4 border-t border-white/5">
+                  <div className="mt-5 flex gap-3 border-t border-white/5 pt-4">
+
                     <Button
-                      onPress={() => handleEdit(event)}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white"
+                      onPress={() =>
+                        handleEdit(event)
+                      }
+                      className="flex-1 bg-indigo-600 text-white hover:bg-indigo-500"
                       radius="lg"
                     >
                       Edit
                     </Button>
 
                     <Button
-                      onPress={() => handleDelete(event._id)}
-                      className="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20"
+                      onPress={() =>
+                        handleDelete(
+                          event._id
+                        )
+                      }
+                      className="flex-1 border border-red-500/20 bg-red-600/20 text-red-400 hover:bg-red-600/30"
                       radius="lg"
                     >
                       Delete
                     </Button>
+
                   </div>
+
                 </div>
+
               </Card>
+
             ))}
+
           </div>
+
         )}
+
       </div>
     </div>
   );

@@ -243,7 +243,7 @@ export default function ManageBookingsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 font-bold text-emerald-400">
-                      {Number(item.amount) === 0 ? "Free" : `৳${item.amount}`}
+                      {Number(item.amount) === 0 ? "Free" : `$${item.amount}`}
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">

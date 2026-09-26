@@ -101,7 +101,7 @@ const DashboardSidebar = () => {
       key: "profile",
       label: "Profile",
       icon: BiUser,
-      href: "/dashboard/attendee/profile",
+      href: "/profile",
     },
   ];
 

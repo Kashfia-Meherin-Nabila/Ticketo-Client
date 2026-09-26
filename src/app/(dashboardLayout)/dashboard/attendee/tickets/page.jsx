@@ -175,7 +175,7 @@ export default function AttendeeTicketsPage() {
             Total Spent
           </p>
           <p className="mt-2 text-3xl font-black text-indigo-400">
-            ৳{bookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0)}
+            ${bookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0)}
           </p>
         </div>
       </div>
@@ -243,7 +243,7 @@ export default function AttendeeTicketsPage() {
                   <div>
                     <p className="text-slate-500">Amount Paid</p>
                     <p className="mt-1 font-semibold text-indigo-400">
-                      {Number(ticket.amount) === 0 ? "Free" : `৳${ticket.amount}`}
+                      {Number(ticket.amount) === 0 ? "Free" : `$${ticket.amount}`}
                     </p>
                   </div>
                   <div>

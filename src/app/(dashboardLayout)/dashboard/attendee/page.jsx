@@ -107,7 +107,7 @@ const isLoading = Boolean(session?.user?.email) && loadedEmail !== session?.user
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Spent</p>
             <h3 className="text-2xl font-black text-white mt-1">
-              {isLoading ? "..." : `৳${stats.totalSpent}`}
+              {isLoading ? "..." : `$${stats.totalSpent}`}
             </h3>
           </div>
         </div>

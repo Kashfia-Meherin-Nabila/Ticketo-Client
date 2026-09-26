@@ -85,7 +85,7 @@ const EventCard = ({ event }) => {
             <span className="text-slate-300">
               {Number(event.ticketPrice) === 0
                 ? "Free"
-                : `৳${event.ticketPrice}`}
+                : `$${event.ticketPrice}`}
             </span>
           </div>
 
