@@ -19,7 +19,7 @@ import {
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
-import { BiBookAdd, BiChart, BiUser } from "react-icons/bi";
+import { BiBookAdd, BiChart, BiDollarCircle, BiUser } from "react-icons/bi";
 
 const DashboardSidebar = () => {
   const { data: session, isPending } = useSession();
@@ -57,6 +57,12 @@ const DashboardSidebar = () => {
       label: "Pricing",
       icon: FaCalendarAlt,
       href: "/dashboard/organizer/pricing",
+    },
+    {
+      key: "payment-history",
+      label: "Payment-history",
+      icon: BiDollarCircle,
+      href: "/dashboard/organizer/payment-history",
     },
     {
       key: "attendees",

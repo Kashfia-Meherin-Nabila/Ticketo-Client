@@ -513,7 +513,7 @@ const EventManagement = () => {
                   htmlFor="ticketPrice"
                   className="block text-sm font-medium text-white mb-2"
                 >
-                  Ticket Price
+                  Ticket Price(USD)
                 </label>
 
                 <Input
@@ -527,7 +527,7 @@ const EventManagement = () => {
                   id="ticketPrice"
                   type="number"
                   min="0"
-                  placeholder="500"
+                  placeholder="$"
                   className="w-full bg-slate-900/50 border-white/10"
                 />
 

@@ -28,6 +28,9 @@ export const auth = betterAuth({
       role: {
         defaultValue: "attendee",
       },
+      plan: {
+        defaultValue: "free",
+      },
       isBlocked: {
         defaultValue: false,
       },

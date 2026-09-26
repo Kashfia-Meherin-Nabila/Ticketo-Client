@@ -341,7 +341,7 @@ export default function OrganizerPricingPage() {
                       <FiArrowRight size={16} />
                     )}
                   </button> */}
-                   <form action="/api/checkout_sessions" method="POST">
+                   {/* <form action="/api/checkout_sessions" method="POST">
                    <input type="hidden" name="plan_id" value={plan.id}/>
       <section>
         <button type="submit" role="link" className={`
@@ -377,7 +377,62 @@ export default function OrganizerPricingPage() {
           Checkout
         </button>
       </section>
-    </form>
+    </form> */}
+    <form action="/api/checkout_sessions" method="POST">
+  <input
+    type="hidden"
+    name="plan_id"
+    value={plan.id}
+  />
+
+  <button
+    type="submit"
+    disabled={plan.id === "free"}
+    className={`
+      mt-8 flex w-full items-center justify-center
+      gap-2 rounded-xl px-4 py-3
+      text-sm font-semibold
+      transition-all duration-200
+
+      ${
+        plan.id === "free"
+          ? `
+            cursor-default
+            border border-white/5
+            bg-white/[0.03]
+            text-white/30
+          `
+          : plan.popular
+            ? `
+              bg-violet-600
+              text-white
+              shadow-lg
+              shadow-violet-900/20
+              hover:bg-violet-500
+            `
+            : `
+              border border-white/10
+              bg-white/5
+              text-white/80
+              hover:border-violet-500/30
+              hover:bg-violet-500/10
+              hover:text-white
+            `
+      }
+
+      disabled:cursor-not-allowed
+      disabled:opacity-50
+    `}
+  >
+    {plan.id === "free"
+      ? "Current Plan"
+      : plan.buttonText}
+
+    {plan.id !== "free" && (
+      <FiArrowRight size={16} />
+    )}
+  </button>
+</form>
                 </div>
               );
             })}

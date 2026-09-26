@@ -29,6 +29,7 @@ export async function POST(request) {
         },
       ],
       mode: "subscription",
+      metadata:{ planId: PlanId},
       success_url: `${origin}/dashboard/organizer/pricing/success?session_id={CHECKOUT_SESSION_ID}`,
       // Provide a name (for example, hosted_web_0001) to label this Checkout integration and measure its conversion independently
       //   integration_identifier: '{{INTEGRATION_ID}}',
