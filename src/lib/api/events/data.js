@@ -1,12 +1,26 @@
 "use server";
 
+import { getUserToken } from "@/lib/core/session";
 import { serverFetch } from "../server";
+
+
+
 
 // Get all events of an organization
 export const myEvents = async (organizationId) => {
+  const token =await getUserToken();
+  console.log(token);
   const resData = await serverFetch(
-    `/api/events/organization/${organizationId}`
+    `/api/events/organization/${organizationId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+    
   );
+      
+
 
   return resData;
 };
@@ -14,7 +28,11 @@ export const myEvents = async (organizationId) => {
 // Fetch organization details by user email, then load events
 export const getOrganizerEventsByEmail = async (organizerEmail) => {
   try {
-    const org = await serverFetch(`/api/organization/${organizerEmail}`);
+    const token = await getUserToken();
+
+    const org = await serverFetch(`/api/organization/${organizerEmail}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!org || !org._id) {
       console.warn("No organization found for email:", organizerEmail);
@@ -69,8 +87,14 @@ export const publicEvents = async ({
 // ==========================================
 
 export const getEventById = async (id) => {
+  const token =await getUserToken();
+  console.log(token);
   const resData = await serverFetch(
-    `/api/events/${id}`
+    `/api/events/${id}`,{
+      headers: {
+    "Authorization": `Bearer ${token}`
+  },
+    }
   );
 
   return resData;

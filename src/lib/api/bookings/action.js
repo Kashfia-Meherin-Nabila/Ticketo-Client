@@ -1,9 +1,12 @@
 "use server";
 
+import { getUserToken } from "@/lib/core/session";
+
 export async function createBooking(bookingPayload) {
   try {
     const baseUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = await getUserToken();
 
     console.log("Sending booking payload:", bookingPayload);
 
@@ -11,6 +14,7 @@ export async function createBooking(bookingPayload) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         ...bookingPayload,

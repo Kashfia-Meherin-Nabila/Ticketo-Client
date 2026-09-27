@@ -14,9 +14,8 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { getUserBookings } from "@/lib/api/bookings/data";
+// import { getUserBookings } from "@/lib/api/bookings/action";
 
 export default function AttendeePaymentsPage() {
   const { data: session, isPending: sessionLoading } =
@@ -36,19 +35,7 @@ export default function AttendeePaymentsPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_URL}/api/bookings/user/${encodeURIComponent(
-            session.user.email
-          )}`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data?.message || "Failed to load payment history."
-          );
-        }
+        const data = await getUserBookings(session.user.email);
 
         setPayments(data?.bookings || data || []);
       } catch (err) {
@@ -64,6 +51,8 @@ export default function AttendeePaymentsPage() {
 
     fetchPayments();
   }, [session, sessionLoading]);
+
+  // ... everything else in the file stays exactly the same
 
   const formatDate = (date) => {
     if (!date) return "N/A";

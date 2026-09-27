@@ -22,13 +22,75 @@
 // };
 
 
+// import { baseURL } from "./baseURL";
+
+// export const serverMutation = async (path, method, data) => {
+//   const res = await fetch(`${baseURL}${path}`, {
+//     method,
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(data),
+//     cache: "no-store",
+//   });
+
+//   const text = await res.text();
+
+//   if (!text) {
+//     return null;
+//   }
+
+//   let result;
+
+//   try {
+//     result = JSON.parse(text);
+//   } catch (error) {
+//     console.error("Invalid JSON response:", text);
+//     throw new Error("Server returned an invalid response");
+//   }
+
+//   if (!res.ok) {
+//     throw new Error(
+//       result?.message || `Request failed with status ${res.status}`
+//     );
+//   }
+
+//   return result;
+// };
+
+
+// export const serverFetch = async (path) => {
+//   const res = await fetch(`${baseURL}${path}`, {
+//     cache: "no-store",
+//   });
+
+//   const text = await res.text();
+
+//   let result = {};
+
+//   try {
+//     result = text ? JSON.parse(text) : {};
+//   } catch {
+//     throw new Error(`Invalid JSON response from ${path}`);
+//   }
+
+//   if (!res.ok) {
+//     throw new Error(
+//       result?.message || `Request failed with status ${res.status}`
+//     );
+//   }
+
+//   return result;
+// };
+
 import { baseURL } from "./baseURL";
 
-export const serverMutation = async (path, method, data) => {
+export const serverMutation = async (path, method, data, options = {}) => {
   const res = await fetch(`${baseURL}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
     },
     body: JSON.stringify(data),
     cache: "no-store",
@@ -58,10 +120,13 @@ export const serverMutation = async (path, method, data) => {
   return result;
 };
 
-
-export const serverFetch = async (path) => {
+export const serverFetch = async (path, options = {}) => {
   const res = await fetch(`${baseURL}${path}`, {
     cache: "no-store",
+    ...options,
+    headers: {
+      ...options.headers,
+    },
   });
 
   const text = await res.text();

@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import toast from "react-hot-toast";
+// import { getUserBookings } from "@/lib/api/bookings/action";
 import {
   HiOutlineTicket,
   HiOutlineSparkles,
@@ -13,6 +14,7 @@ import {
   HiOutlineArrowDownTray,
   HiOutlineArrowTopRightOnSquare,
 } from "react-icons/hi2";
+import { getUserBookings } from "@/lib/api/bookings/data";
 
 export default function AttendeeTicketsPage() {
   const { data: session, isPending } = useSession();
@@ -37,11 +39,7 @@ export default function AttendeeTicketsPage() {
     const fetchTickets = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/bookings/user/${session.user.email}`
-        );
-        if (!res.ok) throw new Error("Failed to load tickets");
-        const data = await res.json();
+        const data = await getUserBookings(session.user.email);
         setBookings(data);
       } catch (error) {
         console.error("Fetch tickets error:", error);
@@ -53,6 +51,8 @@ export default function AttendeeTicketsPage() {
 
     fetchTickets();
   }, [session]);
+
+  // ... rest of the file unchanged (handlePrint, filteredBookings, JSX)
 
   // Print single ticket handler
   const handlePrint = (booking) => {
@@ -106,9 +106,10 @@ export default function AttendeeTicketsPage() {
   };
 
   // Search filter
-  const filteredBookings = bookings.filter((item) =>
-    item.eventTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.transactionId?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBookings = bookings.filter(
+    (item) =>
+      item.eventTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.transactionId?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (isPending || loading) {
@@ -116,7 +117,9 @@ export default function AttendeeTicketsPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-6 py-4">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-sm font-medium text-slate-300">Loading your tickets...</p>
+          <p className="text-sm font-medium text-slate-300">
+            Loading your tickets...
+          </p>
         </div>
       </div>
     );
@@ -160,7 +163,9 @@ export default function AttendeeTicketsPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Total Bookings
           </p>
-          <p className="mt-2 text-3xl font-black text-white">{bookings.length}</p>
+          <p className="mt-2 text-3xl font-black text-white">
+            {bookings.length}
+          </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 backdrop-blur-xl">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -186,7 +191,9 @@ export default function AttendeeTicketsPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400">
             <HiOutlineTicket className="h-8 w-8" />
           </div>
-          <h3 className="mt-4 text-xl font-bold text-white">No Tickets Found</h3>
+          <h3 className="mt-4 text-xl font-bold text-white">
+            No Tickets Found
+          </h3>
           <p className="mt-2 max-w-sm text-sm text-slate-400">
             {searchQuery
               ? "No tickets matched your search query."
@@ -243,14 +250,16 @@ export default function AttendeeTicketsPage() {
                   <div>
                     <p className="text-slate-500">Amount Paid</p>
                     <p className="mt-1 font-semibold text-indigo-400">
-                      {Number(ticket.amount) === 0 ? "Free" : `$${ticket.amount}`}
+                      {Number(ticket.amount) === 0
+                        ? "Free"
+                        : `$${ticket.amount}`}
                     </p>
                   </div>
                   <div>
                     <p className="text-slate-500">Booking Date</p>
                     <p className="mt-1 font-medium text-slate-300">
                       {new Date(
-                        ticket.bookingDate || ticket.createdAt
+                        ticket.bookingDate || ticket.createdAt,
                       ).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

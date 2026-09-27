@@ -14,6 +14,7 @@ import { BsPeople } from "react-icons/bs";
 import { FaCalendarDays } from "react-icons/fa6";
 import { LuBuilding2, LuTicket, LuClock3, LuShieldCheck } from "react-icons/lu";
 
+
 const EventDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -24,7 +25,7 @@ const EventDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
-
+ 
   // ==========================================
   // LOGIN CHECK
   // ==========================================
@@ -62,53 +63,52 @@ const EventDetailsPage = () => {
     loadEvent();
   }, [params.id, session, isPending]);
 
- 
-const handleBookEvent = async () => {
-  // 1. Verify User Authentication
-  if (!session?.user) {
-    toast.error("Please sign in to book events.");
+  const handleBookEvent = async () => {
+    // 1. Verify User Authentication
+    if (!session?.user) {
+      toast.error("Please sign in to book events.");
 
-    return router.push(`/login?callbackUrl=/events/${params.id}`);
-  }
+      return router.push(`/login?callbackUrl=/events/${params.id}`);
+    }
 
-  // 2. Strict Role Check: Only attendee can book
-  if (session.user.role !== "attendee") {
-    Swal.fire({
-      title: "Access Restricted",
-      text: `Only attendees can book events. You are currently signed in as an ${
-        session.user.role || "user"
-      }.`,
-      icon: "warning",
-      background: "#090d16",
-      color: "#f8fafc",
-      confirmButtonColor: "#4f46e5",
-    });
+    // 2. Strict Role Check: Only attendee can book
+    if (session.user.role !== "attendee") {
+      Swal.fire({
+        title: "Access Restricted",
+        text: `Only attendees can book events. You are currently signed in as an ${
+          session.user.role || "user"
+        }.`,
+        icon: "warning",
+        background: "#090d16",
+        color: "#f8fafc",
+        confirmButtonColor: "#4f46e5",
+      });
 
-    return;
-  }
+      return;
+    }
 
-  // 3. Event information
-  const numericPrice = Number(event?.ticketPrice) || 0;
-  const availableSeats = Number(event?.seats) || 0;
+    // 3. Event information
+    const numericPrice = Number(event?.ticketPrice) || 0;
+    const availableSeats = Number(event?.seats) || 0;
 
-  if (availableSeats <= 0) {
-    toast.error("Sorry, this event is sold out.");
-    return;
-  }
+    if (availableSeats <= 0) {
+      toast.error("Sorry, this event is sold out.");
+      return;
+    }
 
-  // Make sure quantity is within the available seats
-  const selectedQuantity = Math.min(
-    Math.max(Number(quantity) || 1, 1),
-    availableSeats
-  );
+    // Make sure quantity is within the available seats
+    const selectedQuantity = Math.min(
+      Math.max(Number(quantity) || 1, 1),
+      availableSeats,
+    );
 
-  const totalAmount = numericPrice * selectedQuantity;
+    const totalAmount = numericPrice * selectedQuantity;
 
-  // 4. Confirmation Modal
-  const confirm = await Swal.fire({
-    title: "Confirm Your Booking",
+    // 4. Confirmation Modal
+    const confirm = await Swal.fire({
+      title: "Confirm Your Booking",
 
-    html: `
+      html: `
       <div class="text-left text-sm text-slate-300 space-y-2 mt-2">
         <p>
           <strong>Event:</strong> ${event.title}
@@ -127,121 +127,110 @@ const handleBookEvent = async () => {
 
         <p>
           <strong>Total Price:</strong>
-          ${
-            numericPrice === 0
-              ? "Free"
-              : `$${totalAmount.toFixed(2)}`
-          }
+          ${numericPrice === 0 ? "Free" : `$${totalAmount.toFixed(2)}`}
         </p>
       </div>
     `,
 
-    icon: "info",
+      icon: "info",
 
-    showCancelButton: true,
+      showCancelButton: true,
 
-    confirmButtonText:
-      numericPrice === 0
-        ? "Confirm & Book"
-        : "Continue to Payment",
+      confirmButtonText:
+        numericPrice === 0 ? "Confirm & Book" : "Continue to Payment",
 
-    cancelButtonText: "Cancel",
+      cancelButtonText: "Cancel",
 
-    confirmButtonColor: "#4f46e5",
+      confirmButtonColor: "#4f46e5",
 
-    cancelButtonColor: "#1e293b",
+      cancelButtonColor: "#1e293b",
 
-    background: "#090d16",
+      background: "#090d16",
 
-    color: "#f8fafc",
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  try {
-    setIsBookingLoading(true);
-
-    // ==========================================
-    // FREE EVENT
-    // ==========================================
-
-    if (numericPrice === 0) {
-      const bookingPayload = {
-        eventId: event._id || params.id,
-        eventTitle: event.title,
-        attendeeEmail: session.user.email,
-        quantity: selectedQuantity,
-        amount: 0,
-        paymentStatus: "paid",
-      };
-
-      const result = await createBooking(bookingPayload);
-
-      if (!result?.success) {
-        throw new Error(
-          result?.message || "Failed to create booking."
-        );
-      }
-
-      await Swal.fire({
-        title: "Booking Confirmed!",
-        text: `${selectedQuantity} ticket${
-          selectedQuantity > 1 ? "s have" : " has"
-        } been booked successfully.`,
-        icon: "success",
-        background: "#090d16",
-        color: "#f8fafc",
-        confirmButtonColor: "#4f46e5",
-      });
-
-      router.push("/dashboard/attendee/my-bookings");
-      return;
-    }
-
-    // ==========================================
-    // PAID EVENT → STRIPE CHECKOUT
-    // ==========================================
-
-    const eventId = event._id || params.id;
-
-    const response = await fetch("/api/checkout_sessions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: "booking",
-        eventId,
-        eventTitle: event.title,
-        ticketPrice: numericPrice,
-        quantity: selectedQuantity,
-      }),
+      color: "#f8fafc",
     });
 
-    const result = await response.json();
+    if (!confirm.isConfirmed) return;
 
-    if (!response.ok || !result?.success) {
-      throw new Error(
-        result?.message || "Failed to initialize payment."
+    try {
+      setIsBookingLoading(true);
+
+      // ==========================================
+      // FREE EVENT
+      // ==========================================
+
+      if (numericPrice === 0) {
+        const bookingPayload = {
+          eventId: event._id || params.id,
+          eventTitle: event.title,
+          attendeeEmail: session.user.email,
+          quantity: selectedQuantity,
+          amount: 0,
+          paymentStatus: "paid",
+        };
+
+        const result = await createBooking(bookingPayload);
+
+        if (!result?.success) {
+          throw new Error(result?.message || "Failed to create booking.");
+        }
+
+        await Swal.fire({
+          title: "Booking Confirmed!",
+          text: `${selectedQuantity} ticket${
+            selectedQuantity > 1 ? "s have" : " has"
+          } been booked successfully.`,
+          icon: "success",
+          background: "#090d16",
+          color: "#f8fafc",
+          confirmButtonColor: "#4f46e5",
+        });
+
+        router.push("/dashboard/attendee/my-bookings");
+        return;
+      }
+
+      // ==========================================
+      // PAID EVENT → STRIPE CHECKOUT
+      // ==========================================
+
+      const eventId = event._id || params.id;
+
+      const response = await fetch("/api/checkout_sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "booking",
+          eventId,
+          eventTitle: event.title,
+          ticketPrice: numericPrice,
+          quantity: selectedQuantity,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || "Failed to initialize payment.");
+      }
+
+      if (!result?.url) {
+        throw new Error("Stripe checkout URL was not returned.");
+      }
+
+      window.location.href = result.url;
+    } catch (error) {
+      console.error("Booking/payment error:", error);
+
+      toast.error(
+        error?.message || "Failed to process booking. Please try again.",
       );
+    } finally {
+      setIsBookingLoading(false);
     }
-
-    if (!result?.url) {
-      throw new Error("Stripe checkout URL was not returned.");
-    }
-
-    window.location.href = result.url;
-  } catch (error) {
-    console.error("Booking/payment error:", error);
-
-    toast.error(
-      error?.message ||
-        "Failed to process booking. Please try again."
-    );
-  } finally {
-    setIsBookingLoading(false);
-  }
-};
+  };
   // ==========================================
   // SESSION LOADING
   // ==========================================
@@ -468,112 +457,100 @@ const handleBookEvent = async () => {
             {/* RIGHT / BOOKING CARD */}
             <div>
               <div className="sticky top-6 rounded-2xl border border-indigo-500/20 bg-linear-to-b from-indigo-500/8 to-transparent p-6">
-               <div className="mb-6">
-  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-    Tickets
-  </p>
+                <div className="mb-6">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Tickets
+                  </p>
 
-  <div className="mt-2 flex items-end justify-between gap-4">
-    <div>
-      <p className="text-3xl font-black text-white">
-        {Number(event.ticketPrice) === 0
-          ? "Free"
-          : `$${Number(event.ticketPrice).toFixed(2)}`}
-      </p>
+                  <div className="mt-2 flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-3xl font-black text-white">
+                        {Number(event.ticketPrice) === 0
+                          ? "Free"
+                          : `$${Number(event.ticketPrice).toFixed(2)}`}
+                      </p>
 
-      <p className="mt-1 text-xs text-slate-500">
-        per person
-      </p>
-    </div>
+                      <p className="mt-1 text-xs text-slate-500">per person</p>
+                    </div>
 
-    <div className="text-right">
-      <p className="text-sm font-bold text-emerald-400">
-        {event.seats}
-      </p>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-emerald-400">
+                        {event.seats}
+                      </p>
 
-      <p className="text-xs text-slate-500">
-        seats left
-      </p>
-    </div>
-  </div>
-</div>
+                      <p className="text-xs text-slate-500">seats left</p>
+                    </div>
+                  </div>
+                </div>
 
-{/* QUANTITY SELECTOR */}
-<div className="mb-6">
-  <p className="mb-3 text-sm font-semibold text-slate-300">
-    Number of tickets
-  </p>
+                {/* QUANTITY SELECTOR */}
+                <div className="mb-6">
+                  <p className="mb-3 text-sm font-semibold text-slate-300">
+                    Number of tickets
+                  </p>
 
-  <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/3 p-2">
-    <Button
-      type="button"
-      isDisabled={quantity <= 1 || isBookingLoading}
-      onPress={() =>
-        setQuantity((previous) =>
-          Math.max(1, previous - 1)
-        )
-      }
-      radius="lg"
-      className="h-10 w-10 min-w-10 bg-white/5 text-xl font-bold text-white hover:bg-white/10 disabled:opacity-40"
-    >
-      −
-    </Button>
+                  <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/3 p-2">
+                    <Button
+                      type="button"
+                      isDisabled={quantity <= 1 || isBookingLoading}
+                      onPress={() =>
+                        setQuantity((previous) => Math.max(1, previous - 1))
+                      }
+                      radius="lg"
+                      className="h-10 w-10 min-w-10 bg-white/5 text-xl font-bold text-white hover:bg-white/10 disabled:opacity-40"
+                    >
+                      −
+                    </Button>
 
-    <div className="text-center">
-      <p className="text-xl font-bold text-white">
-        {quantity}
-      </p>
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-white">{quantity}</p>
 
-      <p className="text-[11px] text-slate-500">
-        ticket{quantity > 1 ? "s" : ""}
-      </p>
-    </div>
+                      <p className="text-[11px] text-slate-500">
+                        ticket{quantity > 1 ? "s" : ""}
+                      </p>
+                    </div>
 
-    <Button
-      type="button"
-      isDisabled={
-        quantity >= Number(event.seats) ||
-        isBookingLoading
-      }
-      onPress={() =>
-        setQuantity((previous) =>
-          Math.min(Number(event.seats), previous + 1)
-        )
-      }
-      radius="lg"
-      className="h-10 w-10 min-w-10 bg-indigo-600 text-xl font-bold text-white hover:bg-indigo-500 disabled:opacity-40"
-    >
-      +
-    </Button>
-  </div>
+                    <Button
+                      type="button"
+                      isDisabled={
+                        quantity >= Number(event.seats) || isBookingLoading
+                      }
+                      onPress={() =>
+                        setQuantity((previous) =>
+                          Math.min(Number(event.seats), previous + 1),
+                        )
+                      }
+                      radius="lg"
+                      className="h-10 w-10 min-w-10 bg-indigo-600 text-xl font-bold text-white hover:bg-indigo-500 disabled:opacity-40"
+                    >
+                      +
+                    </Button>
+                  </div>
 
-  <p className="mt-2 text-center text-xs text-slate-500">
-    Maximum {event.seats} ticket
-    {Number(event.seats) > 1 ? "s" : ""} available
-  </p>
-</div>
+                  <p className="mt-2 text-center text-xs text-slate-500">
+                    Maximum {event.seats} ticket
+                    {Number(event.seats) > 1 ? "s" : ""} available
+                  </p>
+                </div>
 
-{/* TOTAL */}
-<div className="mb-6 rounded-xl border border-indigo-500/10 bg-indigo-500/5 p-4">
-  <div className="flex items-center justify-between">
-    <span className="text-sm text-slate-400">
-      Total
-    </span>
+                {/* TOTAL */}
+                <div className="mb-6 rounded-xl border border-indigo-500/10 bg-indigo-500/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-400">Total</span>
 
-    <span className="text-xl font-black text-white">
-      {Number(event.ticketPrice) === 0
-        ? "Free"
-        : `$${(
-            Number(event.ticketPrice) * quantity
-          ).toFixed(2)}`}
-    </span>
-  </div>
+                    <span className="text-xl font-black text-white">
+                      {Number(event.ticketPrice) === 0
+                        ? "Free"
+                        : `$${(Number(event.ticketPrice) * quantity).toFixed(
+                            2,
+                          )}`}
+                    </span>
+                  </div>
 
-  <p className="mt-1 text-right text-xs text-slate-500">
-    {quantity} × $
-    {Number(event.ticketPrice).toFixed(2)}
-  </p>
-</div>
+                  <p className="mt-1 text-right text-xs text-slate-500">
+                    {quantity} × ${Number(event.ticketPrice).toFixed(2)}
+                  </p>
+                </div>
 
                 <Button
                   onPress={handleBookEvent}

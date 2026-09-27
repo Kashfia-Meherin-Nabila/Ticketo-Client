@@ -94,45 +94,34 @@ const plans = [
 export default function OrganizerPricingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
 
-  const handleCheckout = async (plan) => {
-    if (plan.id === "free") return;
+ const handleCheckout = async (plan) => {
+  if (plan.id === "free") return;
 
-    try {
-      setLoadingPlan(plan.id);
+  try {
+    setLoadingPlan(plan.id);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            planId: plan.id,
-          }),
-        }
-      );
+    const response = await fetch("/api/checkout_sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "subscription",
+        planId: plan.id,
+      }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok || !data?.url) {
-        throw new Error(
-          data?.message || "Could not start checkout."
-        );
-      }
-
-      // React Compiler-safe Stripe redirect
-      window.open(data.url, "_self");
-    } catch (error) {
-      console.error("Checkout error:", error);
-
-      toast.error(
-        error?.message || "Could not start payment."
-      );
-
-      setLoadingPlan(null);
+    if (!response.ok || !data?.url) {
+      throw new Error(data?.message || "Could not start checkout.");
     }
-  };
+
+    window.open(data.url, "_self");
+  } catch (error) {
+    console.error("Checkout error:", error);
+    toast.error(error?.message || "Could not start payment.");
+    setLoadingPlan(null);
+  }
+};
 
   return (
     <main className="min-h-screen bg-[#07070a] px-4 py-8 text-white sm:px-6 lg:px-8 xl:py-10 ">
@@ -385,53 +374,56 @@ export default function OrganizerPricingPage() {
     value={plan.id}
   />
 
-  <button
-    type="submit"
-    disabled={plan.id === "free"}
-    className={`
-      mt-8 flex w-full items-center justify-center
-      gap-2 rounded-xl px-4 py-3
-      text-sm font-semibold
-      transition-all duration-200
+ <button
+  type="button"
+  disabled={plan.id === "free" || loadingPlan !== null}
+  onClick={() => handleCheckout(plan)}
+  className={`
+    mt-8 flex w-full items-center justify-center
+    gap-2 rounded-xl px-4 py-3
+    text-sm font-semibold
+    transition-all duration-200
 
-      ${
-        plan.id === "free"
+    ${
+      plan.id === "free"
+        ? `
+          cursor-default
+          border border-white/5
+          bg-white/[0.03]
+          text-white/30
+        `
+        : plan.popular
           ? `
-            cursor-default
-            border border-white/5
-            bg-white/[0.03]
-            text-white/30
+            bg-violet-600
+            text-white
+            shadow-lg
+            shadow-violet-900/20
+            hover:bg-violet-500
           `
-          : plan.popular
-            ? `
-              bg-violet-600
-              text-white
-              shadow-lg
-              shadow-violet-900/20
-              hover:bg-violet-500
-            `
-            : `
-              border border-white/10
-              bg-white/5
-              text-white/80
-              hover:border-violet-500/30
-              hover:bg-violet-500/10
-              hover:text-white
-            `
-      }
+          : `
+            border border-white/10
+            bg-white/5
+            text-white/80
+            hover:border-violet-500/30
+            hover:bg-violet-500/10
+            hover:text-white
+          `
+    }
 
-      disabled:cursor-not-allowed
-      disabled:opacity-50
-    `}
-  >
-    {plan.id === "free"
-      ? "Current Plan"
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  `}
+>
+  {plan.id === "free"
+    ? "Current Plan"
+    : loadingPlan === plan.id
+      ? "Redirecting..."
       : plan.buttonText}
 
-    {plan.id !== "free" && (
-      <FiArrowRight size={16} />
-    )}
-  </button>
+  {plan.id !== "free" && loadingPlan !== plan.id && (
+    <FiArrowRight size={16} />
+  )}
+</button>
 </form>
                 </div>
               );
