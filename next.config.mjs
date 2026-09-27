@@ -13,6 +13,10 @@ const nextConfig = {
       },
     ],
   },
+  //  logging: {
+  //   serverFunctions: false,   // kills the "└─ ƒ myEvents(...) in 49ms" lines
+  //   incomingRequests: false,  // kills the "GET /dashboard/... 200 in Xms" lines
+  // }
 };
 
 export default nextConfig;

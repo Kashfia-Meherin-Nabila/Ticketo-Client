@@ -275,10 +275,10 @@ const OrganizerOverviewPage = () => {
           isFree
             ? "border-yellow-500/20"
             : "border-violet-500/20"
-        } bg-gradient-to-r ${
+        } bg-linear-to-r ${
           isFree
-            ? "from-yellow-500/[0.06] via-amber-600/[0.04] to-transparent"
-            : "from-violet-500/[0.08] via-purple-600/[0.04] to-transparent"
+            ? "from-yellow-500/6 via-amber-600/4 to-transparent"
+            : "from-violet-500/8 via-purple-600/4 to-transparent"
         }`}
         radius="lg"
       >

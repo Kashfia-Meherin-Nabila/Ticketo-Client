@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { stripe } from "@/lib/stripe";
-import { createBooking } from "@/lib/api/bookings/action";
 
 export default async function PaymentSuccessPage({ searchParams }) {
   const params = await searchParams;
@@ -15,12 +14,9 @@ export default async function PaymentSuccessPage({ searchParams }) {
   let session;
 
   try {
-    session = await stripe.checkout.sessions.retrieve(
-      sessionId,
-      {
-        expand: ["line_items", "payment_intent"],
-      }
-    );
+    session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["line_items", "payment_intent"],
+    });
   } catch (error) {
     console.error(
       "Failed to retrieve Stripe session:",
@@ -28,7 +24,7 @@ export default async function PaymentSuccessPage({ searchParams }) {
     );
 
     return (
-      <main className="min-h-screen bg-[#050816] flex items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] px-4">
         <div className="w-full max-w-lg rounded-2xl border border-red-500/20 bg-[#0b1020] p-8 text-center">
           <h1 className="text-2xl font-bold text-red-400">
             Payment Verification Failed
@@ -56,7 +52,7 @@ export default async function PaymentSuccessPage({ searchParams }) {
 
   if (session.payment_status !== "paid") {
     return (
-      <main className="min-h-screen bg-[#050816] flex items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] px-4">
         <div className="w-full max-w-lg rounded-2xl border border-yellow-500/20 bg-[#0b1020] p-8 text-center">
           <h1 className="text-2xl font-bold text-yellow-400">
             Payment Not Completed
@@ -85,10 +81,9 @@ export default async function PaymentSuccessPage({ searchParams }) {
 
   const paymentType = metadata.paymentType;
 
-  // This page is specifically for event ticket payments.
   if (paymentType !== "event_ticket") {
     return (
-      <main className="min-h-screen bg-[#050816] flex items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] px-4">
         <div className="w-full max-w-lg rounded-2xl border border-yellow-500/20 bg-[#0b1020] p-8 text-center">
           <h1 className="text-2xl font-bold text-yellow-400">
             Invalid Payment
@@ -111,12 +106,12 @@ export default async function PaymentSuccessPage({ searchParams }) {
   }
 
   // -----------------------------------
-  // Extract booking information
+  // Read booking information
   // -----------------------------------
 
-  const eventId = metadata.eventId;
-  const eventTitle = metadata.eventTitle;
-  const attendeeEmail = metadata.attendeeEmail;
+  const eventTitle = metadata.eventTitle || "Event";
+  const attendeeEmail =
+    metadata.attendeeEmail || "N/A";
 
   const quantity = Number(metadata.quantity) || 1;
 
@@ -125,92 +120,29 @@ export default async function PaymentSuccessPage({ searchParams }) {
     Number(session.amount_total || 0) / 100;
 
   // -----------------------------------
-  // Create booking
+  // Stripe payment information
   // -----------------------------------
 
-  let bookingResult = null;
+  const paymentIntent =
+    session.payment_intent;
 
-  try {
-    const bookingPayload = {
-      eventId,
-      eventTitle,
-      attendeeEmail,
-      quantity,
-      amount: totalAmount,
-      paymentStatus: "paid",
-    };
-
-    bookingResult = await createBooking(
-      bookingPayload
-    );
-
-    if (!bookingResult?.success) {
-      throw new Error(
-        bookingResult?.message ||
-          "Failed to create booking."
-      );
-    }
-  } catch (error) {
-    console.error(
-      "Booking creation failed:",
-      error
-    );
-
-    return (
-      <main className="min-h-screen bg-[#050816] flex items-center justify-center px-4">
-        <div className="w-full max-w-lg rounded-2xl border border-red-500/20 bg-[#0b1020] p-8 text-center">
-          <h1 className="text-2xl font-bold text-red-400">
-            Payment Successful
-          </h1>
-
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            Your payment was successful, but we could
-            not create your booking record.
-          </p>
-
-          <p className="mt-3 text-xs text-slate-500">
-            Payment Session: {session.id}
-          </p>
-
-          <p className="mt-2 text-xs text-slate-500">
-            Please contact support with this session ID.
-          </p>
-
-          <div className="mt-6 flex justify-center gap-3">
-            <Link
-              href="/events"
-              className="rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-            >
-              Back to Events
-            </Link>
-
-            <Link
-              href="/dashboard/attendee/my-bookings"
-              className="rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
-            >
-              My Bookings
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const paymentIntentId =
+    typeof paymentIntent === "string"
+      ? paymentIntent
+      : paymentIntent?.id || "N/A";
 
   // -----------------------------------
-  // Booking successfully created
+  // IMPORTANT:
+  // Booking is created by Stripe webhook.
+  // This page only displays payment result.
   // -----------------------------------
-
-  const booking =
-    bookingResult?.booking || {};
-
-  const transactionId =
-    booking.transactionId || "N/A";
 
   return (
     <main className="min-h-screen bg-[#050816] px-4 py-16">
       <div className="mx-auto w-full max-w-2xl">
         <div className="rounded-3xl border border-white/10 bg-[#0b1020] p-6 shadow-2xl sm:p-10">
-          {/* Success icon */}
+
+          {/* Success Icon */}
 
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-3xl font-bold text-white">
@@ -226,13 +158,16 @@ export default async function PaymentSuccessPage({ searchParams }) {
             </h1>
 
             <p className="mt-2 text-slate-400">
-              Your event booking has been confirmed.
+              Your payment was successfully completed.
             </p>
           </div>
 
-          {/* Booking details */}
+          {/* Booking Details */}
 
           <div className="mt-8 space-y-4 rounded-2xl border border-white/10 bg-black/20 p-5">
+
+            {/* Event */}
+
             <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
               <span className="text-sm text-slate-400">
                 Event
@@ -242,6 +177,8 @@ export default async function PaymentSuccessPage({ searchParams }) {
                 {eventTitle}
               </span>
             </div>
+
+            {/* Attendee */}
 
             <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
               <span className="text-sm text-slate-400">
@@ -253,15 +190,20 @@ export default async function PaymentSuccessPage({ searchParams }) {
               </span>
             </div>
 
+            {/* Quantity */}
+
             <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
               <span className="text-sm text-slate-400">
                 Quantity
               </span>
 
               <span className="text-sm font-semibold text-white">
-                {quantity}
+                {quantity} ticket
+                {quantity > 1 ? "s" : ""}
               </span>
             </div>
+
+            {/* Total */}
 
             <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
               <span className="text-sm text-slate-400">
@@ -273,6 +215,8 @@ export default async function PaymentSuccessPage({ searchParams }) {
               </span>
             </div>
 
+            {/* Payment Status */}
+
             <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
               <span className="text-sm text-slate-400">
                 Payment Status
@@ -283,18 +227,20 @@ export default async function PaymentSuccessPage({ searchParams }) {
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
+            {/* Payment Intent */}
+
+            <div className="flex items-start justify-between gap-4">
               <span className="text-sm text-slate-400">
-                Transaction ID
+                Payment ID
               </span>
 
               <span className="max-w-[60%] break-all text-right text-xs font-medium text-slate-300">
-                {transactionId}
+                {paymentIntentId}
               </span>
             </div>
           </div>
 
-          {/* Stripe session */}
+          {/* Stripe Session */}
 
           <div className="mt-5 rounded-xl border border-white/5 bg-black/20 p-4">
             <p className="text-xs text-slate-500">
@@ -306,9 +252,21 @@ export default async function PaymentSuccessPage({ searchParams }) {
             </p>
           </div>
 
+          {/* Booking Note */}
+
+          <div className="mt-5 rounded-xl border border-indigo-500/10 bg-indigo-500/5 p-4">
+            <p className="text-center text-xs leading-5 text-slate-400">
+              Your booking is being finalized by our payment
+              system. You can view your booking from the
+              dashboard once the payment confirmation is
+              processed.
+            </p>
+          </div>
+
           {/* Buttons */}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+
             <Link
               href="/dashboard/attendee/my-bookings"
               className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
@@ -322,6 +280,7 @@ export default async function PaymentSuccessPage({ searchParams }) {
             >
               Browse More Events
             </Link>
+
           </div>
         </div>
       </div>
