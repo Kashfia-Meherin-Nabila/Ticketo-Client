@@ -83,13 +83,23 @@
 //   return result;
 // };
 
+import { getUserToken } from "../core/session";
 import { baseURL } from "./baseURL";
+// import { getUserToken } from "./actions/getUserToken"; // adjust path to wherever this file lives
+
+const getAuthHeader = async () => {
+  const token = await getUserToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const serverMutation = async (path, method, data, options = {}) => {
+  const authHeader = await getAuthHeader();
+
   const res = await fetch(`${baseURL}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...authHeader,
       ...options.headers,
     },
     body: JSON.stringify(data),
@@ -121,10 +131,13 @@ export const serverMutation = async (path, method, data, options = {}) => {
 };
 
 export const serverFetch = async (path, options = {}) => {
+  const authHeader = await getAuthHeader();
+
   const res = await fetch(`${baseURL}${path}`, {
     cache: "no-store",
     ...options,
     headers: {
+      ...authHeader,
       ...options.headers,
     },
   });

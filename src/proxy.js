@@ -9,11 +9,11 @@ export async function  proxy(request) {
     })
 
     if(!session){
-         return NextResponse.redirect(new URL('/home', request.url))
+         return NextResponse.redirect(new URL('/login', request.url))
     }
  
 }
  
 export const config = {
-  matcher: ['/events/:path*','/profile']
+  matcher: ['/events/:path','/profile']
 }

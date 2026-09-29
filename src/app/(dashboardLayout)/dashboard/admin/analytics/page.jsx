@@ -11,6 +11,7 @@ import {
   FiBarChart2,
   FiPieChart,
 } from "react-icons/fi";
+import { getUserToken } from "@/lib/core/session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -34,12 +35,16 @@ const AdminAnalyticsPage = () => {
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      const token = await getUserToken();
       try {
         setLoading(true);
         setError("");
 
         const response = await fetch(`${API_URL}/api/admin/analytics`, {
           cache: "no-store",
+          headers: {
+    Authorization: `Bearer ${token}`,
+  },
         });
 
         const data = await response.json();
