@@ -56,7 +56,7 @@ export async function POST(request) {
     // Get the current website origin
     const origin =
       headersList.get("origin") ||
-      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
       "http://localhost:3000";
 
     // Get logged-in user
