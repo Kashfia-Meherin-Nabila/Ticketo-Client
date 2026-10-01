@@ -133,30 +133,89 @@ export const serverMutation = async (path, method, data, options = {}) => {
 export const serverFetch = async (path, options = {}) => {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${baseURL}${path}`, {
-    cache: "no-store",
-    ...options,
-    headers: {
-      ...authHeader,
-      ...options.headers,
-    },
-  });
+  const url = `${baseURL}${path}`;
 
-  const text = await res.text();
-
-  let result = {};
+  console.log("=================================");
+  console.log("SERVER FETCH URL:", url);
+  console.log("BASE URL:", baseURL);
+  console.log("PATH:", path);
+  console.log("=================================");
 
   try {
-    result = text ? JSON.parse(text) : {};
-  } catch {
-    throw new Error(`Invalid JSON response from ${path}`);
-  }
+    const res = await fetch(url, {
+      cache: "no-store",
+      ...options,
+      headers: {
+        ...authHeader,
+        ...options.headers,
+      },
+    });
 
-  if (!res.ok) {
-    throw new Error(
-      result?.message || `Request failed with status ${res.status}`
-    );
-  }
+    const text = await res.text();
 
-  return result;
+    console.log("API STATUS:", res.status);
+    console.log("API RESPONSE:", text);
+
+    let result = {};
+
+    try {
+      result = text ? JSON.parse(text) : {};
+    } catch (error) {
+      console.error("INVALID JSON:", text);
+      throw new Error(`Invalid JSON response from ${path}`);
+    }
+
+    if (!res.ok) {
+      console.error("API ERROR:", {
+        url,
+        status: res.status,
+        response: result,
+      });
+
+      throw new Error(
+        result?.message || `Request failed with status ${res.status}`
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("SERVER FETCH FAILED:", {
+      url,
+      message: error.message,
+      error,
+    });
+
+    throw error;
+  }
 };
+
+// export const serverFetch = async (path, options = {}) => {
+//   const authHeader = await getAuthHeader();
+
+//   const res = await fetch(`${baseURL}${path}`, {
+//     cache: "no-store",
+//     ...options,
+//     headers: {
+//       ...authHeader,
+//       ...options.headers,
+//     },
+//   });
+
+//   const text = await res.text();
+
+//   let result = {};
+
+//   try {
+//     result = text ? JSON.parse(text) : {};
+//   } catch {
+//     throw new Error(`Invalid JSON response from ${path}`);
+//   }
+
+//   if (!res.ok) {
+//     throw new Error(
+//       result?.message || `Request failed with status ${res.status}`
+//     );
+//   }
+
+//   return result;
+// };

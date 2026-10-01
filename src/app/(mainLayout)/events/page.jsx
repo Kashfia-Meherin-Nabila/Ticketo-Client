@@ -7,8 +7,9 @@ import { BiSearch } from "react-icons/bi";
 import { FiRotateCcw, FiCalendar } from "react-icons/fi";
 
 import EventCard from "@/components/EventCard";
+import { publicEvents } from "@/lib/api/events/public";
 
-import { publicEvents } from "@/lib/api/events/data";
+// import { publicEvents } from "@/lib/api/events/data";
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
